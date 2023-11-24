@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dall' Ansar | Admin Page</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="adminPage.css">
+</head>
+<body>
+    <div class="modal" id="adminLoginModal" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Admin Login</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="admin-login-form">
+                        <div class="form-group">
+                            <label for="admin-username">Username:</label>
+                            <input type="text" class="form-control" id="admin-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-password">Password:</label>
+                            <input type="password" class="form-control" id="admin-password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Log in</button>
+                        <a href="menu.html" class="btn btn-primary">Back to Menu</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-panel">
+        <h2>Registered Users</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Password</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="users-table-body"></tbody>
+        </table>
+        <div class="mb-3">
+            <button class="btn btn-primary" id="add-user-button" data-toggle="modal" data-target="#addUserModal">Add User</button>
+            <a href="menu.html" class="btn btn-danger">Exit</a>
+        </div>
+    </div>
+
+    <div class="modal" id="addUserModal" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Add User</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-user-form">
+                        <div class="form-group">
+                            <label for="add-fname">First Name:</label>
+                            <input type="text" class="form-control" id="add-fname" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="add-lname">Last Name:</label>
+                            <input type="text" class="form-control" id="add-lname" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="add-email">Email:</label>
+                            <input type="text" class="form-control" id="add-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="add-password">Password:</label>
+                            <input type="password" class="form-control" id="add-password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add User</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editUserModal" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit User</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-user-form">
+                        <div class="form-group">
+                            <label for="edit-fname">First Name:</label>
+                            <input type="text" class="form-control" id="edit-fname" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-lname">Last Name:</label>
+                            <input type="text" class="form-control" id="edit-lname" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-email">Email:</label>
+                            <input type="text" class="form-control" id="edit-email" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-password">Password:</label>
+                            <input type="password" class="form-control" id="edit-password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+        
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            $("#adminLoginModal").modal("show");
+            document.getElementById("admin-login-form").addEventListener("submit", function (event) {
+                event.preventDefault();
+                const enteredUsername = document.getElementById("admin-username").value;
+                const enteredPassword = document.getElementById("admin-password").value;
+                if (enteredUsername === "KussainovAnsar" && enteredPassword === "Qqwerty1") {
+                    $("#adminLoginModal").modal("hide");
+                } else {
+                    alert("Incorrect username or password. Please check the entered data.");
+                }
+            });
+        });
+
+        function displayUsersInTable() {
+            const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+            const usersTableBody = document.getElementById("users-table-body");
+            usersTableBody.innerHTML = ""; 
+            existingUsers.forEach(user => {
+                const userRow = document.createElement("tr");
+                userRow.innerHTML = `
+                    <td>${user.fname}</td>
+                    <td>${user.lname}</td>
+                    <td>${user.email}</td>
+                    <td>${user.password}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.email}')">Delete</button>
+                        <button class="btn btn-primary btn-sm" onclick="editUser('${user.email}')">Edit</button>
+                    </td>
+                `;
+                usersTableBody.appendChild(userRow);
+            });
+        }
+
+        function deleteUser(email) {
+            const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+            const updatedUsers = existingUsers.filter(user => user.email !== email);
+            localStorage.setItem("users", JSON.stringify(updatedUsers));
+            displayUsersInTable();
+        }
+
+        function editUser(email) {
+        const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+        const userToEdit = existingUsers.find(user => user.email === email);
+
+        document.getElementById("edit-fname").value = userToEdit.fname;
+        document.getElementById("edit-lname").value = userToEdit.lname;
+        document.getElementById("edit-email").value = userToEdit.email;
+        document.getElementById("edit-password").value = userToEdit.password;
+
+        $("#editUserModal").modal("show");
+        }
+
+        displayUsersInTable();
+
+        document.getElementById("add-user-form").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const addFname = document.getElementById("add-fname").value;
+            const addLname = document.getElementById("add-lname").value;
+            const addEmail = document.getElementById("add-email").value;
+            const addPassword = document.getElementById("add-password").value;
+            const newUser = { fname: addFname, lname: addLname, email: addEmail, password: addPassword };
+            const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+            const updatedUsers = [...existingUsers, newUser];
+            localStorage.setItem("users", JSON.stringify(updatedUsers));
+            displayUsersInTable();
+            document.getElementById("add-fname").value = "";
+            document.getElementById("add-lname").value = "";
+            document.getElementById("add-email").value = "";
+            document.getElementById("add-password").value = "";
+            $("#addUserModal").modal("hide");
+        });
+
+        document.getElementById("edit-user-form").addEventListener("submit", function (event) {
+        event.preventDefault();
+        const updatedFname = document.getElementById("edit-fname").value;
+        const updatedLname = document.getElementById("edit-lname").value;
+        const updatedEmail = document.getElementById("edit-email").value;
+        const updatedPassword = document.getElementById("edit-password").value;
+        const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+        const updatedUsers = existingUsers.map(user => {
+            if (user.email === updatedEmail) {
+                return { ...user, fname: updatedFname, lname: updatedLname, password: updatedPassword };
+            }
+            return user;
+        });
+        localStorage.setItem("users", JSON.stringify(updatedUsers));
+        displayUsersInTable();
+        $("#editUserModal").modal("hide");
+    });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
